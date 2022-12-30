@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/vitorr7df/api-rest-golang/database"
@@ -24,10 +23,32 @@ func TodasReceitas(w http.ResponseWriter, r *http.Request) {
 func RetornaUmaReceita(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
+	var receita models.Receita
+	database.DB.First(&receita, id)
+	json.NewEncoder(w).Encode(receita)
+}
 
-	for _, receita := range models.Receitas {
-		if strconv.Itoa(receita.Id) == id {
-			json.NewEncoder(w).Encode(receita)
-		}
-	}
+func CriaUmaNovaReceita(w http.ResponseWriter, r *http.Request) {
+	var novaReceita models.Receita
+	json.NewDecoder(r.Body).Decode(&novaReceita)
+	database.DB.Create(&novaReceita)
+	json.NewEncoder(w).Encode(novaReceita)
+}
+
+func DeletaUmaReceita(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	var receita models.Receita
+	database.DB.Delete(&receita, id)
+	json.NewEncoder(w).Encode(receita)
+}
+
+func EditaReceita(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	var receita models.Receita
+	database.DB.First(&receita, id)
+	json.NewDecoder(r.Body).Decode(&receita)
+	database.DB.Save(&receita)
+	json.NewEncoder(w).Encode(receita)
 }
